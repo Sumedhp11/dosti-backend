@@ -4,10 +4,15 @@ import { ErrorHandler } from "../utils/ErrorClass.js";
 import bcrypt from "bcryptjs";
 
 import { sendEmail } from "../utils/sendEmail.js";
+import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
 
 const newUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { fullName, username, phone, email, avatar, password } = req.body;
+    const { fullName, username, phone, email, password } = req.body;
+    const file = req.file;
+    if (!file)
+      return next(new ErrorHandler("Please Upload Profile Picture", 400));
+    const result = await uploadFilesToCloudinary([file]);
 
     if (!fullName || !username || !phone || !email || !password)
       return next(new ErrorHandler("Please Provide Credentials", 400));
@@ -25,7 +30,7 @@ const newUser = async (req: Request, res: Response, next: NextFunction) => {
       fullName: fullName,
       username: username,
       phone,
-      avatar: "",
+      avatar: result[0].public_id,
       password: HashedPw,
       email,
       friends: [],

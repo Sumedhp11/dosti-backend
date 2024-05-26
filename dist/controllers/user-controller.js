@@ -2,9 +2,14 @@ import User from "../models/user-model.js";
 import { ErrorHandler } from "../utils/ErrorClass.js";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "../utils/sendEmail.js";
+import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
 const newUser = async (req, res, next) => {
     try {
-        const { fullName, username, phone, email, avatar, password } = req.body;
+        const { fullName, username, phone, email, password } = req.body;
+        const file = req.file;
+        if (!file)
+            return next(new ErrorHandler("Please Upload Profile Picture", 400));
+        const result = await uploadFilesToCloudinary([file]);
         if (!fullName || !username || !phone || !email || !password)
             return next(new ErrorHandler("Please Provide Credentials", 400));
         const alreadySavedUser = await User.findOne({
@@ -19,7 +24,7 @@ const newUser = async (req, res, next) => {
             fullName: fullName,
             username: username,
             phone,
-            avatar: "",
+            avatar: result[0].public_id,
             password: HashedPw,
             email,
             friends: [],
