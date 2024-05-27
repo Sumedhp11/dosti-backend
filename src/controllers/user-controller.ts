@@ -86,5 +86,42 @@ const checkUsernameExist = async (
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 };
+const VerifyUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { verificationCode } = req.body;
+    if (!verificationCode)
+      return next(new ErrorHandler("Please Enter Verification Code", 400));
 
-export { newUser, checkUsernameExist };
+    const existingUser = await User.findOne({
+      IsVerifiedToken: verificationCode,
+    });
+    if (!existingUser)
+      return next(new ErrorHandler("Invalid verification code", 400));
+
+    if (
+      !existingUser.IsVerifiedTokenExpiry ||
+      existingUser.IsVerifiedTokenExpiry.getTime() <= Date.now()
+    ) {
+      await existingUser.deleteOne();
+      return next(
+        new ErrorHandler(
+          "Verification code expired. Please register again",
+          400
+        )
+      );
+    }
+    existingUser.isVerified = true;
+    existingUser.IsVerifiedToken = undefined;
+    existingUser.IsVerifiedTokenExpiry = undefined;
+    await existingUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User Verified Successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
+export { newUser, checkUsernameExist, VerifyUser };
