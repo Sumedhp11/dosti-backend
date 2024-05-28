@@ -108,11 +108,11 @@ const loginUser = async (req, res, next) => {
         const { username, password } = req.body;
         if (!username || !password)
             return next(new ErrorHandler("Please Provide Credentials", 400));
-        const existingUser = await User.findOne({
-            username,
-        });
+        const existingUser = await User.findOne({ username });
         if (!existingUser)
             return next(new ErrorHandler("User Does Not Exists", 400));
+        if (!existingUser.isVerified)
+            return next(new ErrorHandler("Please Verify Your Account Before Login", 400));
         const isMatch = await bcrypt.compare(password, existingUser.password);
         if (!isMatch)
             return next(new ErrorHandler("Invalid Credentials", 400));
@@ -136,4 +136,60 @@ const loginUser = async (req, res, next) => {
         return next(new ErrorHandler("Internal Server Error", 500));
     }
 };
-export { newUser, checkUsernameExist, VerifyUser, loginUser };
+const forgetPasswordemailController = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        if (!email)
+            return next(new ErrorHandler("Please Provide Email", 400));
+        const existingUser = await User.findOne({
+            email,
+        });
+        if (!existingUser)
+            return next(new ErrorHandler("User Does Not Exists", 400));
+        let forgetPasswordToken = Math.floor(100000 + Math.random() * 900000).toString();
+        const codeExpiryDate = new Date(Date.now() + 15 * 60 * 1000);
+        existingUser.resetPasswordToken = forgetPasswordToken;
+        existingUser.resetPasswordTokenExpiry = codeExpiryDate;
+        const emailResponse = await sendEmail(email, "Reset Password Code", forgetPasswordToken, codeExpiryDate);
+        if (!emailResponse.success)
+            return next(new ErrorHandler("Failed To Send Email", 400));
+        await existingUser.save();
+        return res.status(200).json({
+            success: true,
+            message: "Forget Password Sent to your Email Successfully",
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler("Internal Server Error", 500));
+    }
+};
+const resetPassword = async (req, res, next) => {
+    try {
+        const { code, password } = req.body;
+        if (!code || !password)
+            return next(new ErrorHandler("Please Provide Forget Password Code and new Password", 400));
+        const existingUser = await User.findOne({
+            resetPasswordToken: code,
+        });
+        if (!existingUser)
+            return next(new ErrorHandler("Invalid Forget Password Code", 400));
+        if (!existingUser.resetPasswordTokenExpiry ||
+            existingUser.resetPasswordTokenExpiry.getTime() <= Date.now())
+            return next(new ErrorHandler("Reset Password code expired. Please Get a New Code", 400));
+        const HashedPw = await bcrypt.hash(password, 10);
+        existingUser.password = HashedPw;
+        existingUser.resetPasswordToken = undefined;
+        existingUser.resetPasswordTokenExpiry = undefined;
+        await existingUser.save();
+        res.status(200).json({
+            success: true,
+            message: "Password reset successful",
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler("Internal Server Error", 500));
+    }
+};
+export { newUser, checkUsernameExist, VerifyUser, loginUser, forgetPasswordemailController, resetPassword, };
