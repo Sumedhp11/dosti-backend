@@ -17,7 +17,9 @@ cloudinary.config({
 const app = express();
 export const resend = new Resend(process.env.RESEND_API_KEY);
 connectDb();
-app.use(cors());
+app.use(cors({
+    credentials: true,
+}));
 app.use(express.json());
 app.use(morgan("dev"));
 //routes
