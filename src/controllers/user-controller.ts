@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import User from "../models/user-model.js";
 import { ErrorHandler } from "../utils/ErrorClass.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 import { sendEmail } from "../utils/sendEmail.js";
 import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
@@ -124,4 +125,37 @@ const VerifyUser = async (req: Request, res: Response, next: NextFunction) => {
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 };
-export { newUser, checkUsernameExist, VerifyUser };
+
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password)
+      return next(new ErrorHandler("Please Provide Credentials", 400));
+    const existingUser = await User.findOne({
+      username,
+    });
+    if (!existingUser)
+      return next(new ErrorHandler("User Does Not Exists", 400));
+    const isMatch = await bcrypt.compare(password, existingUser.password);
+    if (!isMatch) return next(new ErrorHandler("Invalid Credentials", 400));
+
+    const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET!);
+    return res
+      .status(200)
+      .cookie("dosti-token", token, {
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+        sameSite: "none",
+        httpOnly: true,
+        secure: true,
+      })
+      .json({
+        success: true,
+        message: `Welcome ${existingUser.username}`,
+        user: existingUser,
+      });
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
+export { newUser, checkUsernameExist, VerifyUser, loginUser };
