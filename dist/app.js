@@ -5,6 +5,7 @@ import morgan from "morgan";
 import { v2 as cloudinary } from "cloudinary";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/user-routes.js";
+import postRouter from "./routes/posts-routes.js";
 import { errorMiddleware } from "./middleware/ErrorMiddleware.js";
 import { connectDb } from "./utils/connectDb.js";
 import { Resend } from "resend";
@@ -26,10 +27,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 //routes
-app.use("/api/auth", authRouter);
 app.get("/", (req, res) => {
     res.send("Working!");
 });
+app.use("/api/auth", authRouter);
+app.use("/api/posts", postRouter);
 app.use(errorMiddleware);
 app.listen(port, () => {
     console.log("Server Working on Port " + port);
