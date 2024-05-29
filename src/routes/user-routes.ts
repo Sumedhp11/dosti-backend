@@ -6,8 +6,10 @@ import {
   loginUser,
   forgetPasswordemailController,
   resetPassword,
+  GetMyProfile,
 } from "../controllers/user-controller.js";
 import { singleAvatar } from "../utils/multerConfig.js";
+import { isAuthenticated } from "../middleware/isAuthenticated.js";
 
 const Router = express.Router();
 Router.post("/new", singleAvatar, newUser);
@@ -16,5 +18,6 @@ Router.post("/verify", VerifyUser);
 Router.post("/login", loginUser);
 Router.post("/send-forget-password-email", forgetPasswordemailController);
 Router.post("/reset-password", resetPassword);
+Router.get("/get-me", isAuthenticated, GetMyProfile);
 
 export default Router;

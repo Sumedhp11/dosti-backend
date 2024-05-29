@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 
 import { sendEmail } from "../utils/sendEmail.js";
 import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
+import { AuthenticatedInterface } from "../middleware/isAuthenticated.js";
 
 const newUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -244,6 +245,28 @@ const resetPassword = async (
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 };
+
+const GetMyProfile = async (
+  req: AuthenticatedInterface,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.userId;
+    console.log(userId, 256);
+
+    const existinguser = await User.findById(userId).select("-password");
+
+    return res.status(200).json({
+      success: true,
+      message: "User Data Retrieved Successfully",
+      data: existinguser,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
 export {
   newUser,
   checkUsernameExist,
@@ -251,4 +274,5 @@ export {
   loginUser,
   forgetPasswordemailController,
   resetPassword,
+  GetMyProfile,
 };

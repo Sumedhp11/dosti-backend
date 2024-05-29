@@ -3,6 +3,7 @@ import { configDotenv } from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
 import { v2 as cloudinary } from "cloudinary";
+import cookieParser from "cookie-parser";
 import authRouter from "./routes/user-routes.js";
 import { errorMiddleware } from "./middleware/ErrorMiddleware.js";
 import { connectDb } from "./utils/connectDb.js";
@@ -22,6 +23,7 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(morgan("dev"));
 //routes
 app.use("/api/auth", authRouter);

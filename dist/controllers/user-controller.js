@@ -192,4 +192,20 @@ const resetPassword = async (req, res, next) => {
         return next(new ErrorHandler("Internal Server Error", 500));
     }
 };
-export { newUser, checkUsernameExist, VerifyUser, loginUser, forgetPasswordemailController, resetPassword, };
+const GetMyProfile = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        console.log(userId, 256);
+        const existinguser = await User.findById(userId).select("-password");
+        return res.status(200).json({
+            success: true,
+            message: "User Data Retrieved Successfully",
+            data: existinguser,
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler("Internal Server Error", 500));
+    }
+};
+export { newUser, checkUsernameExist, VerifyUser, loginUser, forgetPasswordemailController, resetPassword, GetMyProfile, };
