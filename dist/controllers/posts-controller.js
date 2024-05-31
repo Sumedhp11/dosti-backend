@@ -43,7 +43,7 @@ const getAllPosts = async (req, res, next) => {
             .skip(skip)
             .limit(limit);
         if (!allPosts.length)
-            return next(new ErrorHandler("No More Posts", 400));
+            return next(new ErrorHandler("No Posts Found!", 400));
         return res.status(200).json({
             success: true,
             message: "Retrieved All Posts",
