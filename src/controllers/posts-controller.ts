@@ -116,7 +116,7 @@ const addComment = async (
 ) => {
   try {
     const { postId, comment } = req.body;
-    if (!postId || comment)
+    if (!postId || !comment)
       return next(new ErrorHandler("Please Provide PostId and Comment", 400));
     const post = await Posts.findById(postId);
     if (!post) return next(new ErrorHandler("Post Not Found!", 400));

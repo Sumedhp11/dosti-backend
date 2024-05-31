@@ -96,7 +96,7 @@ const LikePost = async (req, res, next) => {
 const addComment = async (req, res, next) => {
     try {
         const { postId, comment } = req.body;
-        if (!postId || comment)
+        if (!postId || !comment)
             return next(new ErrorHandler("Please Provide PostId and Comment", 400));
         const post = await Posts.findById(postId);
         if (!post)
