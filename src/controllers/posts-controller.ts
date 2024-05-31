@@ -45,6 +45,11 @@ const getAllPosts = async (
     const skip = (Number(page) - 1) * limit;
     const totalDocs = await Posts.countDocuments();
     const allPosts = await Posts.find({})
+      .populate({
+        path: "userId",
+        model: "User",
+        select: ["username", "avatar"],
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
