@@ -40,6 +40,11 @@ const getAllPosts = async (req, res, next) => {
                 model: "User",
                 select: ["username", "avatar"],
             })
+                .populate({
+                path: "comments.userId",
+                model: "User",
+                select: ["username", "avatar"],
+            })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
