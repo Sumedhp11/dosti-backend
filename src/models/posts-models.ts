@@ -11,17 +11,6 @@ const commentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-const likesSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
-
 const postsSchema = new mongoose.Schema<postsInterface>(
   {
     caption: {
@@ -32,7 +21,12 @@ const postsSchema = new mongoose.Schema<postsInterface>(
       type: String,
       required: true,
     },
-    likes: [likesSchema],
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",

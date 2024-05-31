@@ -1,6 +1,7 @@
 import { ErrorHandler } from "../utils/ErrorClass.js";
 import Posts from "../models/posts-models.js";
 import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
+import mongoose from "mongoose";
 const AddNewPost = async (req, res, next) => {
     try {
         const { caption } = req.body;
@@ -69,15 +70,16 @@ const LikePost = async (req, res, next) => {
         const post = await Posts.findById(postId);
         if (!post)
             return next(new ErrorHandler("Post Not Found", 404));
+        if (!req.userId)
+            return next(new ErrorHandler("Please login To like", 400));
         const userId = req.userId;
-        const alreadyLikedIndex = post.likes.indexOf(userId);
+        const alreadyLikedIndex = post.likes.findIndex((like) => like.toString() === String(userId));
         if (alreadyLikedIndex !== -1) {
             post.likes.splice(alreadyLikedIndex, 1);
         }
         else {
-            post.likes.push(userId);
+            post.likes.push(mongoose.Types.ObjectId(userId));
         }
-        // Save the updated post
         await post.save();
         return res.status(200).json({
             success: true,
