@@ -4,7 +4,7 @@ export interface postsInterface {
   _id?: Schema.Types.ObjectId;
   caption: string;
   content: string;
-  likes: number;
+  likes: Schema.Types.ObjectId[];
   comments: [
     {
       userId: Schema.Types.ObjectId;

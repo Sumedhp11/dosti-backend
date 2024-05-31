@@ -80,17 +80,27 @@ const LikePost = async (
 ) => {
   try {
     const { postId } = req.query;
-    if (!postId) return next(new ErrorHandler("Please Provide PostId", 400));
-
+    if (!postId) return next(new ErrorHandler("Please Provide postId", 400));
     const post = await Posts.findById(postId);
-    if (!post) return next(new ErrorHandler("Post Not Found", 404));
+    if (!post)
+      return next(new ErrorHandler("Post Not Found For this PostId", 400));
+    const likes = post.likes;
+    const alreadyLiked = likes.findIndex(
+      (like) => String(like) === String(req.userId)
+    );
+    if (alreadyLiked !== -1) {
+      post.likes.splice(alreadyLiked, 1);
+    } else {
+      post.likes.push(req.userId!);
+    }
 
+    await post.save();
     return res.status(200).json({
       success: true,
       message: "Likes Updated Successfully",
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 };
