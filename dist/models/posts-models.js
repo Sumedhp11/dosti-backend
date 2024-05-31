@@ -7,6 +7,13 @@ const commentSchema = new mongoose.Schema({
     },
     comment: String,
 }, { timestamps: true });
+const likesSchema = new mongoose.Schema({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+}, { timestamps: true });
 const postsSchema = new mongoose.Schema({
     caption: {
         type: String,
@@ -16,12 +23,7 @@ const postsSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    likes: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-        },
-    ],
+    likes: [likesSchema],
     userId: {
         type: Schema.Types.ObjectId,
         ref: "User",

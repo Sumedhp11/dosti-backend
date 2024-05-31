@@ -43,16 +43,19 @@ const getAllPosts = async (
     const { page = 1 } = req.query;
     const limit = 10;
     const skip = (Number(page) - 1) * limit;
-    const totalDocs = await Posts.countDocuments();
-    const allPosts = await Posts.find({})
-      .populate({
-        path: "userId",
-        model: "User",
-        select: ["username", "avatar"],
-      })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const [totalDocs, allPosts] = await Promise.all([
+      Posts.countDocuments(),
+      await Posts.find({})
+        .populate({
+          path: "userId",
+          model: "User",
+          select: ["username", "avatar"],
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+    ]);
+
     if (!allPosts.length) return next(new ErrorHandler("No Posts Found!", 400));
     return res.status(200).json({
       success: true,
@@ -69,4 +72,38 @@ const getAllPosts = async (
   }
 };
 
-export { AddNewPost, getAllPosts };
+const LikePost = async (
+  req: AuthenticatedInterface,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { postId } = req.query;
+    if (!postId) return next(new ErrorHandler("Please Provide PostId", 400));
+
+    const post = await Posts.findById(postId);
+    if (!post) return next(new ErrorHandler("Post Not Found", 404));
+
+    const userId = req.userId;
+
+    const alreadyLikedIndex = post.likes.indexOf(userId);
+    if (alreadyLikedIndex !== -1) {
+      post.likes.splice(alreadyLikedIndex, 1);
+    } else {
+      post.likes.push(userId);
+    }
+
+    // Save the updated post
+    await post.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Likes Updated Successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
+
+export { AddNewPost, getAllPosts, LikePost };
