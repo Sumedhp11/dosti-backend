@@ -7,6 +7,7 @@ import {
   forgetPasswordemailController,
   resetPassword,
   GetMyProfile,
+  logoutController,
 } from "../controllers/user-controller.js";
 import { singleAvatar } from "../utils/multerConfig.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
@@ -19,5 +20,6 @@ Router.post("/login", loginUser);
 Router.post("/send-forget-password-email", forgetPasswordemailController);
 Router.post("/reset-password", resetPassword);
 Router.get("/get-me", isAuthenticated, GetMyProfile);
+Router.get("/logout", isAuthenticated, logoutController);
 
 export default Router;
