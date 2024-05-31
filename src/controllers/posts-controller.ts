@@ -84,20 +84,7 @@ const LikePost = async (
 
     const post = await Posts.findById(postId);
     if (!post) return next(new ErrorHandler("Post Not Found", 404));
-    if (!req.userId) return next(new ErrorHandler("Please login To like", 400));
-    const userId = req.userId;
 
-    const alreadyLikedIndex = post.likes.findIndex(
-      (like: string) => like.toString() === String(userId)
-    );
-
-    if (alreadyLikedIndex !== -1) {
-      post.likes.splice(alreadyLikedIndex, 1);
-    } else {
-      post.likes.push(userId);
-    }
-
-    await post.save();
     return res.status(200).json({
       success: true,
       message: "Likes Updated Successfully",
