@@ -34,4 +34,34 @@ const AddNewPost = async (
   }
 };
 
-export { AddNewPost };
+const getAllPosts = async (
+  req: AuthenticatedInterface,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { page = 1 } = req.query;
+    const limit = 10;
+    const skip = (Number(page) - 1) * limit;
+    const totalDocs = await Posts.countDocuments();
+    const allPosts = await Posts.find({})
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    if (!allPosts.length) return next(new ErrorHandler("No More Posts", 400));
+    return res.status(200).json({
+      success: true,
+      message: "Retrieved All Posts",
+      data: {
+        posts: allPosts,
+        totalPages: Math.ceil(totalDocs / limit),
+        currentPage: Number(page),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
+
+export { AddNewPost, getAllPosts };
