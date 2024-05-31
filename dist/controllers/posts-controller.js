@@ -11,7 +11,7 @@ const AddNewPost = async (req, res, next) => {
         const newPosts = new Posts({
             caption,
             content: contentLink[0].public_id,
-            likes: 0,
+            likes: [],
             comments: [],
             userId: req.userId,
         });
