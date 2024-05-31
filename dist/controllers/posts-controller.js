@@ -1,7 +1,6 @@
 import { ErrorHandler } from "../utils/ErrorClass.js";
 import Posts from "../models/posts-models.js";
 import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
-import mongoose from "mongoose";
 const AddNewPost = async (req, res, next) => {
     try {
         const { caption } = req.body;
@@ -78,7 +77,7 @@ const LikePost = async (req, res, next) => {
             post.likes.splice(alreadyLikedIndex, 1);
         }
         else {
-            post.likes.push(mongoose.Types.ObjectId(userId));
+            post.likes.push(userId);
         }
         await post.save();
         return res.status(200).json({

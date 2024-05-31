@@ -94,7 +94,7 @@ const LikePost = async (
     if (alreadyLikedIndex !== -1) {
       post.likes.splice(alreadyLikedIndex, 1);
     } else {
-      post.likes.push(mongoose.Types.ObjectId(userId));
+      post.likes.push(userId);
     }
 
     await post.save();
