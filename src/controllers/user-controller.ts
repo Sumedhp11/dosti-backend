@@ -267,6 +267,17 @@ const GetMyProfile = async (
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 };
+
+const logoutController = async (
+  req: AuthenticatedInterface,
+  res: Response,
+  next: NextFunction
+) => {
+  return res.status(200).cookie("dosti-token", "", { maxAge: 0 }).json({
+    success: true,
+    message: "Logout Succesfull",
+  });
+};
 export {
   newUser,
   checkUsernameExist,
@@ -275,4 +286,5 @@ export {
   forgetPasswordemailController,
   resetPassword,
   GetMyProfile,
+  logoutController,
 };
