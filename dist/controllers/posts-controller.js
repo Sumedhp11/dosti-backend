@@ -93,4 +93,29 @@ const LikePost = async (req, res, next) => {
         return next(new ErrorHandler("Internal Server Error", 500));
     }
 };
-export { AddNewPost, getAllPosts, LikePost };
+const addComment = async (req, res, next) => {
+    try {
+        const { postId, comment } = req.body;
+        if (!postId || comment)
+            return next(new ErrorHandler("Please Provide PostId and Comment", 400));
+        const post = await Posts.findById(postId);
+        if (!post)
+            return next(new ErrorHandler("Post Not Found!", 400));
+        post.comments.push({
+            userId: req.userId,
+            comment: comment,
+            updatedAt: new Date(),
+            createdAt: new Date(),
+        });
+        await post.save();
+        return res.status(200).json({
+            success: true,
+            message: "Comment added successfully",
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler("Internal Server Error", 500));
+    }
+};
+export { AddNewPost, getAllPosts, LikePost, addComment };

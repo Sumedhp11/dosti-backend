@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { postsInterface } from "../interfaces/post-interface.js";
-const commentSchema = new mongoose.Schema(
+import { PostInterface } from "../interfaces/comment-interface.js";
+const commentSchema = new mongoose.Schema<PostInterface>(
   {
     userId: {
       type: Schema.Types.ObjectId,
