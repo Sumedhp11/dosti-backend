@@ -1,5 +1,6 @@
-import { ErrorHandler } from "../utils/ErrorClass.js";
 import jwt from "jsonwebtoken";
+import User from "../models/user-model.js";
+import { ErrorHandler } from "../utils/ErrorClass.js";
 const isAuthenticated = (req, res, next) => {
     const token = req.cookies["dosti-token"];
     if (!token)
@@ -17,4 +18,20 @@ const isAuthenticated = (req, res, next) => {
     req.userId = decodeData.id;
     next();
 };
-export { isAuthenticated };
+const socketAuthenticated = async (socket, next) => {
+    try {
+        const token = socket.request.cookies?.["dosti-token"];
+        if (!token)
+            return next(new ErrorHandler("Please Login Your Not Authenticated", 400));
+        let decodeData;
+        decodeData = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decodeData.id);
+        socket.user = user;
+        next();
+    }
+    catch (error) {
+        console.log(error, 50);
+        next();
+    }
+};
+export { isAuthenticated, socketAuthenticated };

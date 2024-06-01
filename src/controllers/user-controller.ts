@@ -1,12 +1,15 @@
+import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import User from "../models/user-model.js";
 import { ErrorHandler } from "../utils/ErrorClass.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
-import { sendEmail } from "../utils/sendEmail.js";
-import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
 import { AuthenticatedInterface } from "../middleware/isAuthenticated.js";
+import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
+import { sendEmail } from "../utils/sendEmail.js";
+import Notifications from "../models/notification-model.js";
+import { emitEvent } from "../utils/socketCookieParser.js";
+import { friendRequest } from "../constants/Events.js";
 
 const newUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -255,7 +258,12 @@ const GetMyProfile = async (
     const userId = req.userId;
     console.log(userId, 256);
 
-    const existinguser = await User.findById(userId).select("-password");
+    const existinguser = await User.findById(userId)
+      .select("-password")
+      .populate({
+        path: "friends",
+        model: "User",
+      });
 
     return res.status(200).json({
       success: true,
@@ -278,13 +286,57 @@ const logoutController = async (
     message: "Logout Succesfull",
   });
 };
+
+const sendFriendRequest = async (
+  req: AuthenticatedInterface,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { receiverUserId } = req.params;
+    if (!receiverUserId)
+      return next(new ErrorHandler("Please Provide Receiver's User Id", 400));
+
+    const alreadyExistingNotificationRequest = await Notifications.findOne({
+      $or: [
+        { relatedUser: receiverUserId, userId: req.userId },
+        {
+          userId: req.userId,
+          relatedUser: receiverUserId,
+        },
+      ],
+      type: "Friend_Request",
+    });
+    if (alreadyExistingNotificationRequest)
+      return next(
+        new ErrorHandler("Friend Request has Already Been Sent", 400)
+      );
+    const newFriendRequestNotification = new Notifications({
+      userId: req.userId,
+      message: "You Have a New Friend Request",
+      relatedUser: receiverUserId,
+      type: "Friend_Request",
+    });
+    await newFriendRequestNotification.save();
+    emitEvent(req, friendRequest, [receiverUserId]);
+    return res.status(200).json({
+      success: true,
+      message: "Friend Request Sent Successful",
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
+
 export {
-  newUser,
-  checkUsernameExist,
-  VerifyUser,
-  loginUser,
-  forgetPasswordemailController,
-  resetPassword,
   GetMyProfile,
+  VerifyUser,
+  checkUsernameExist,
+  forgetPasswordemailController,
+  loginUser,
   logoutController,
+  newUser,
+  resetPassword,
+  sendFriendRequest,
 };

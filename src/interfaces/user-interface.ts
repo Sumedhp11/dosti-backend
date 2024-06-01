@@ -1,6 +1,7 @@
 import { Schema } from "mongoose";
 
-export interface UserSchemaInterface {
+export interface UserSchemaInterface extends Document {
+  _id?: Schema.Types.ObjectId;
   fullName: string;
   username: string;
   phone: number;
