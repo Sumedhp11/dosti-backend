@@ -313,7 +313,7 @@ const sendFriendRequest = async (
       );
     const newFriendRequestNotification = new Notifications({
       userId: req.userId,
-      message: "You Have a New Friend Request",
+      message: `${req.userId} Has Sent you a Friend Request`,
       relatedUser: receiverUserId,
       type: "Friend_Request",
     });
