@@ -358,7 +358,7 @@ const ManageFriendRequest = async (
       );
       const newNotification = new Notifications({
         userId: relatedUser?._id,
-        message: `${user} Accepted Your Friend Request`,
+        message: `${user?._id} Accepted Your Friend Request`,
         relatedUser: user?._id,
         type: "Friend_Request",
       });

@@ -276,7 +276,7 @@ const ManageFriendRequest = async (req, res, next) => {
             emitEvent(req, friendRequestAccepted, [relatedUser?._id], `${user} Accepted Your Friend Request`);
             const newNotification = new Notifications({
                 userId: relatedUser?._id,
-                message: `${user} Accepted Your Friend Request`,
+                message: `${user?._id} Accepted Your Friend Request`,
                 relatedUser: user?._id,
                 type: "Friend_Request",
             });
