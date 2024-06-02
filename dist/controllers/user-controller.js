@@ -6,7 +6,7 @@ import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import Notifications from "../models/notification-model.js";
 import { emitEvent } from "../utils/socketCookieParser.js";
-import { friendRequest } from "../constants/Events.js";
+import { friendRequest, friendRequestAccepted } from "../constants/Events.js";
 const newUser = async (req, res, next) => {
     try {
         const { fullName, username, phone, email, password } = req.body;
@@ -257,4 +257,66 @@ const sendFriendRequest = async (req, res, next) => {
         return next(new ErrorHandler("Internal Server Error", 500));
     }
 };
-export { GetMyProfile, VerifyUser, checkUsernameExist, forgetPasswordemailController, loginUser, logoutController, newUser, resetPassword, sendFriendRequest, };
+const ManageFriendRequest = async (req, res, next) => {
+    try {
+        const { action, notificationId } = req.body;
+        const alreadyExistingNotificationRequest = await Notifications.findById(notificationId);
+        if (action === "accept") {
+            const [user, relatedUser] = await Promise.all([
+                User.findById(alreadyExistingNotificationRequest?.userId),
+                User.findById(alreadyExistingNotificationRequest?.relatedUser),
+            ]);
+            if (user && relatedUser) {
+                user?.friends.push(relatedUser._id);
+                relatedUser?.friends.push(user._id);
+            }
+            await user?.save();
+            await relatedUser?.save();
+            await alreadyExistingNotificationRequest?.deleteOne();
+            emitEvent(req, friendRequestAccepted, [relatedUser?._id], `${user} Accepted Your Friend Request`);
+            const newNotification = new Notifications({
+                userId: relatedUser?._id,
+                message: `${user} Accepted Your Friend Request`,
+                relatedUser: user?._id,
+                type: "Friend_Request",
+            });
+            await newNotification.save();
+            return res.status(200).json({
+                success: true,
+                message: "Friend Request Accepted Successfully",
+            });
+        }
+        if (action === "rejected") {
+            await alreadyExistingNotificationRequest?.deleteOne();
+            return res.status(200).json({
+                success: true,
+                message: "Friend Request Rejected Successfully",
+            });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        return next(new ErrorHandler("Internal Server Error", 500));
+    }
+};
+const getAllUsers = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const friendIds = user.friends.map((friend) => friend._id);
+        const users = await User.find({ _id: { $ne: userId, $nin: friendIds } });
+        return res.status(200).json({
+            success: true,
+            message: "Users Retrieved Successfully",
+            data: users,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+export { GetMyProfile, VerifyUser, checkUsernameExist, forgetPasswordemailController, loginUser, logoutController, newUser, resetPassword, sendFriendRequest, ManageFriendRequest, getAllUsers, };
