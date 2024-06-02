@@ -5,17 +5,17 @@ import { configDotenv } from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import { Server } from "socket.io";
+import notificationRouter from "./routes/notifications-routes.js";
 import postRouter from "./routes/posts-routes.js";
 import authRouter from "./routes/user-routes.js";
 
 import { createServer } from "http";
 import { Resend } from "resend";
+import { AuthenticatedSocket } from "./interfaces/types.js";
 import { errorMiddleware } from "./middleware/ErrorMiddleware.js";
 import { socketAuthenticated } from "./middleware/isAuthenticated.js";
 import { connectDb } from "./utils/connectDb.js";
 import { cookieParserMiddleware } from "./utils/socketCookieParser.js";
-import { AuthenticatedSocket } from "./interfaces/types.js";
-import { friendRequest } from "./constants/Events.js";
 configDotenv();
 
 const port = 8080;
@@ -65,6 +65,7 @@ io.on("connection", (socket: AuthenticatedSocket) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/posts", postRouter);
+app.use("/api/notification", notificationRouter);
 
 app.use(errorMiddleware);
 server.listen(port, () => {

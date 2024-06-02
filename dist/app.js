@@ -5,6 +5,7 @@ import { configDotenv } from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import { Server } from "socket.io";
+import notificationRouter from "./routes/notifications-routes.js";
 import postRouter from "./routes/posts-routes.js";
 import authRouter from "./routes/user-routes.js";
 import { createServer } from "http";
@@ -52,6 +53,7 @@ io.on("connection", (socket) => {
 });
 app.use("/api/auth", authRouter);
 app.use("/api/posts", postRouter);
+app.use("/api/notification", notificationRouter);
 app.use(errorMiddleware);
 server.listen(port, () => {
     console.log("Server Working on Port " + port);

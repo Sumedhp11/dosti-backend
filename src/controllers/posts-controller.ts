@@ -4,6 +4,9 @@ import { ErrorHandler } from "../utils/ErrorClass.js";
 import Posts from "../models/posts-models.js";
 import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
+import Notifications from "../models/notification-model.js";
+import { emitEvent } from "../utils/socketCookieParser.js";
+import { postCommented, postLiked } from "../constants/Events.js";
 
 const AddNewPost = async (
   req: AuthenticatedInterface,
@@ -97,6 +100,15 @@ const LikePost = async (
       post.likes.splice(alreadyLiked, 1);
     } else {
       post.likes.push(req.userId!);
+      const newNotification = new Notifications({
+        message: `${req.userId} Like Your Post`,
+        postId,
+        type: "Post_Interaction",
+        relatedUser: req.userId,
+        userId: post.userId,
+      });
+      await newNotification.save();
+      emitEvent(req, postLiked, [post.userId]);
     }
 
     await post.save();
@@ -126,6 +138,16 @@ const addComment = async (
       updatedAt: new Date(),
       createdAt: new Date(),
     });
+    const newNotification = new Notifications({
+      message: `${req.userId} Comment on Your Post`,
+      postId,
+      type: "Post_Interaction",
+      relatedUser: req.userId,
+      userId: post.userId,
+    });
+    await newNotification.save();
+    emitEvent(req, postCommented, [post.userId]);
+
     await post.save();
     return res.status(200).json({
       success: true,
