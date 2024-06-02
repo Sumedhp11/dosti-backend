@@ -17,7 +17,18 @@ const getAllNotifications = async (
 
     const notifications = await Notifications.find({
       $or: [{ userId }, { relatedUser: userId }],
-    }).sort({ createdAt: -1 });
+    })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "userId",
+        model: "User",
+        select: ["username", "avatar"],
+      })
+      .populate({
+        path: "relatedUser",
+        model: "User",
+        select: ["username", "avatar"],
+      });
 
     return res.status(200).json({
       success: true,
