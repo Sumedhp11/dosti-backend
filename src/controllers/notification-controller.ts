@@ -16,7 +16,7 @@ const getAllNotifications = async (
     }
 
     const notifications = await Notifications.find({
-      relatedUser: userId,
+      userId,
     })
       .sort({ createdAt: -1 })
       .populate({

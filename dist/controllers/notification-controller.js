@@ -7,7 +7,7 @@ const getAllNotifications = async (req, res, next) => {
             return next(new ErrorHandler("User ID not found", 400));
         }
         const notifications = await Notifications.find({
-            relatedUser: userId,
+            userId,
         })
             .sort({ createdAt: -1 })
             .populate({
