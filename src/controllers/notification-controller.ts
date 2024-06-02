@@ -15,8 +15,20 @@ const getAllNotifications = async (
       return next(new ErrorHandler("User ID not found", 400));
     }
 
-    const notifications = await Notifications.find({
+    const postInteractionNotifications = await Notifications.find({
       userId,
+      type: "Post_Interaction",
+    })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "relatedUser",
+        model: "User",
+        select: ["username", "avatar"],
+      });
+
+    const friendRequestNotifications = await Notifications.find({
+      type: "Friend_Request",
+      relatedUser: userId,
     })
       .sort({ createdAt: -1 })
       .populate({
@@ -29,6 +41,12 @@ const getAllNotifications = async (
         model: "User",
         select: ["username", "avatar"],
       });
+    const notifications = [
+      ...postInteractionNotifications,
+      ...friendRequestNotifications,
+    ];
+
+    notifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     return res.status(200).json({
       success: true,
