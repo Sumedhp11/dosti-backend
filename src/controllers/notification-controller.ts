@@ -24,6 +24,11 @@ const getAllNotifications = async (
         path: "relatedUser",
         model: "User",
         select: ["username", "avatar"],
+      })
+      .populate({
+        path: "postId",
+        model: "Posts",
+        select: ["content"],
       });
 
     const friendRequestNotifications = await Notifications.find({
