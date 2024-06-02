@@ -16,7 +16,7 @@ const getAllNotifications = async (
     }
 
     const notifications = await Notifications.find({
-      $or: [{ userId }, { relatedUser: userId }],
+      relatedUser: userId,
     })
       .sort({ createdAt: -1 })
       .populate({
