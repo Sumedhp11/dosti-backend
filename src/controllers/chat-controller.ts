@@ -29,5 +29,35 @@ const newChatcontroller = async (
     return next(new ErrorHandler("Internal Server Error", 500));
   }
 };
+const getAllChats = async (
+  req: AuthenticatedInterface,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const allChats = await Chat.find({
+      members: req.userId,
+    })
+      .populate({
+        path: "members",
+        model: "User",
+        select: ["username", "avatar"],
+      })
+      .populate({
+        path: "creator",
+        model: "User",
+        select: ["username", "avatar"],
+      });
+    if (!allChats) return next(new ErrorHandler("No Chats Found!", 400));
+    return res.status(200).json({
+      success: true,
+      message: "Retrieved All Chats Successfully",
+      data: allChats,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
 
-export { newChatcontroller };
+export { newChatcontroller, getAllChats };
