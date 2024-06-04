@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { configDotenv } from "dotenv";
 import express from "express";
+import { v4 as uuid } from "uuid";
 import morgan from "morgan";
 import { Server } from "socket.io";
 import notificationRouter from "./routes/notifications-routes.js";
@@ -14,7 +15,9 @@ import { Resend } from "resend";
 import { errorMiddleware } from "./middleware/ErrorMiddleware.js";
 import { socketAuthenticated } from "./middleware/isAuthenticated.js";
 import { connectDb } from "./utils/connectDb.js";
-import { cookieParserMiddleware } from "./utils/socketCookieParser.js";
+import { cookieParserMiddleware, getSockets, } from "./utils/socketCookieParser.js";
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/Events.js";
+import Message from "./models/message-model.js";
 configDotenv();
 const port = 8080;
 cloudinary.config({
@@ -50,6 +53,35 @@ io.on("connection", (socket) => {
     if (socket.user && socket.user._id) {
         const userId = socket.user._id.toString();
         userSocketIDs.set(userId, socket.id);
+        socket.on(NEW_MESSAGE, async ({ chatId, members, message, }) => {
+            const messageForRealTime = {
+                content: message,
+                _id: uuid(),
+                sender: {
+                    _id: userId,
+                    username: socket.user?.username,
+                },
+                chat: chatId,
+                createdAt: new Date().toISOString(),
+            };
+            const messageForDb = {
+                content: message,
+                sender: userId,
+                chat: chatId,
+            };
+            const membersSocket = getSockets(members);
+            io.to(membersSocket).emit(NEW_MESSAGE, {
+                chatId,
+                message: messageForRealTime,
+            });
+            io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
+            try {
+                await Message.create(messageForDb);
+            }
+            catch (error) {
+                throw new Error(error);
+            }
+        });
     }
 });
 app.use("/api/auth", authRouter);

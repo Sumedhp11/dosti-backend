@@ -4,4 +4,5 @@ export interface messageInterface {
   content: string;
   sender: Schema.Types.ObjectId;
   chat: Schema.Types.ObjectId;
+  _id?: Schema.Types.ObjectId;
 }
