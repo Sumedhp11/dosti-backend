@@ -3,21 +3,21 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { configDotenv } from "dotenv";
 import express from "express";
-import { v4 as uuid } from "uuid";
 import morgan from "morgan";
 import { Server } from "socket.io";
+import { v4 as uuid } from "uuid";
+import ChatRouter from "./routes/chat-routes.js";
 import notificationRouter from "./routes/notifications-routes.js";
 import postRouter from "./routes/posts-routes.js";
 import authRouter from "./routes/user-routes.js";
-import ChatRouter from "./routes/chat-routes.js";
 import { createServer } from "http";
 import { Resend } from "resend";
+import { EXITED, JOINED, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, } from "./constants/Events.js";
 import { errorMiddleware } from "./middleware/ErrorMiddleware.js";
 import { socketAuthenticated } from "./middleware/isAuthenticated.js";
+import Message from "./models/message-model.js";
 import { connectDb } from "./utils/connectDb.js";
 import { cookieParserMiddleware, getSockets, } from "./utils/socketCookieParser.js";
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/Events.js";
-import Message from "./models/message-model.js";
 configDotenv();
 const port = 8080;
 cloudinary.config({
@@ -35,6 +35,7 @@ const io = new Server(server, {
 });
 app.set("io", io);
 export const userSocketIDs = new Map();
+const onlineUsers = new Set();
 export const resend = new Resend(process.env.RESEND_API_KEY);
 connectDb();
 app.use(cors({
@@ -81,6 +82,16 @@ io.on("connection", (socket) => {
             catch (error) {
                 throw new Error(error);
             }
+        });
+        socket.on(JOINED, ({ userId, members }) => {
+            onlineUsers.add(userId.toString());
+            const membersSocket = getSockets(members);
+            io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
+        });
+        socket.on(EXITED, ({ userId, members }) => {
+            onlineUsers.delete(userId.toString());
+            const membersSocket = getSockets(members);
+            io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
         });
     }
 });
