@@ -86,6 +86,7 @@ const getAllMessages = async (req, res, next) => {
             data: {
                 messages: messages.reverse(),
                 totalPages,
+                currentPage: Number(page),
             },
         });
     }

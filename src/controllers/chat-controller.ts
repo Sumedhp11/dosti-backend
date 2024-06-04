@@ -98,6 +98,7 @@ const getAllMessages = async (
       data: {
         messages: messages.reverse(),
         totalPages,
+        currentPage: Number(page),
       },
     });
   } catch (error) {
