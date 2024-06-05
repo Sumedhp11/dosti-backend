@@ -54,7 +54,7 @@ io.on("connection", (socket) => {
     if (socket.user && socket.user._id) {
         const userId = socket.user._id.toString();
         userSocketIDs.set(userId, socket.id);
-        socket.on(NEW_MESSAGE, async ({ chatId, members, message, }) => {
+        socket.on(NEW_MESSAGE, async ({ chatId, memberIds, message, }) => {
             const messageForRealTime = {
                 content: message,
                 _id: uuid(),
@@ -70,8 +70,8 @@ io.on("connection", (socket) => {
                 sender: userId,
                 chat: chatId,
             };
-            console.log("Members:", members);
-            const membersSocket = await getSockets(members);
+            console.log("Members:", memberIds);
+            const membersSocket = await getSockets(memberIds);
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,

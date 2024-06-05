@@ -79,11 +79,11 @@ io.on("connection", (socket: AuthenticatedSocket) => {
       NEW_MESSAGE,
       async ({
         chatId,
-        members,
+        memberIds,
         message,
       }: {
         chatId: string;
-        members: [];
+        memberIds: [];
         message: string;
       }) => {
         const messageForRealTime = {
@@ -101,8 +101,8 @@ io.on("connection", (socket: AuthenticatedSocket) => {
           sender: userId,
           chat: chatId,
         };
-        console.log("Members:", members);
-        const membersSocket = await getSockets(members);
+        console.log("Members:", memberIds);
+        const membersSocket = await getSockets(memberIds);
 
         io.to(membersSocket).emit(NEW_MESSAGE, {
           chatId,
