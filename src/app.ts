@@ -102,13 +102,19 @@ io.on("connection", (socket: AuthenticatedSocket) => {
           chat: chatId,
         };
         const membersSocket = getSockets(members);
+        console.log("All member sockets:", membersSocket);
+        console.log("Sender socket:", socket.id);
+
         const filteredMembersSocket = membersSocket.filter(
           (memberSocket) => memberSocket !== socket.id
         );
+
+        console.log("Filtered member sockets:", filteredMembersSocket);
         io.to(membersSocket).emit(NEW_MESSAGE, {
           chatId,
           message: messageForRealTime,
         });
+
         io.to(filteredMembersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
         try {
           await Message.create(messageForDb);
