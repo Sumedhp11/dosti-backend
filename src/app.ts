@@ -113,7 +113,10 @@ io.on("connection", (socket: AuthenticatedSocket) => {
           (memberSocket) => memberSocket !== socket.id
         );
 
-        io.to(filteredMembersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
+        io.to(filteredMembersSocket).emit(NEW_MESSAGE_ALERT, {
+          chatId,
+          message: message,
+        });
         try {
           await Message.create(messageForDb);
         } catch (error: any) {

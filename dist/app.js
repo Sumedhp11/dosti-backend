@@ -76,7 +76,10 @@ io.on("connection", (socket) => {
                 message: messageForRealTime,
             });
             const filteredMembersSocket = membersSocket.filter((memberSocket) => memberSocket !== socket.id);
-            io.to(filteredMembersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
+            io.to(filteredMembersSocket).emit(NEW_MESSAGE_ALERT, {
+                chatId,
+                message: message,
+            });
             try {
                 await Message.create(messageForDb);
             }
