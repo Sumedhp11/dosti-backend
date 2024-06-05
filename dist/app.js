@@ -12,7 +12,7 @@ import postRouter from "./routes/posts-routes.js";
 import authRouter from "./routes/user-routes.js";
 import { createServer } from "http";
 import { Resend } from "resend";
-import { EXITED, JOINED, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, } from "./constants/Events.js";
+import { EXITED, JOINED, NEW_MESSAGE, NEW_MESSAGE_ALERT, } from "./constants/Events.js";
 import { errorMiddleware } from "./middleware/ErrorMiddleware.js";
 import { socketAuthenticated } from "./middleware/isAuthenticated.js";
 import Message from "./models/message-model.js";
@@ -54,6 +54,8 @@ io.on("connection", (socket) => {
     if (socket.user && socket.user._id) {
         const userId = socket.user._id.toString();
         userSocketIDs.set(userId, socket.id);
+        onlineUsers.add(userId);
+        io.emit(JOINED, Array.from(onlineUsers));
         socket.on(NEW_MESSAGE, async ({ chatId, memberIds, message, }) => {
             const messageForRealTime = {
                 content: message,
@@ -87,15 +89,11 @@ io.on("connection", (socket) => {
                 throw new Error(error);
             }
         });
-        socket.on(JOINED, ({ userId, members }) => {
-            onlineUsers.add(userId.toString());
-            const membersSocket = getSockets(members);
-            io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
-        });
-        socket.on(EXITED, ({ userId, members }) => {
-            onlineUsers.delete(userId.toString());
-            const membersSocket = getSockets(members);
-            io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
+        socket.on("disconnect", () => {
+            if (userId) {
+                onlineUsers.delete(userId);
+                io.emit(EXITED, Array.from(onlineUsers));
+            }
         });
     }
 });

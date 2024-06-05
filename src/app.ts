@@ -74,6 +74,8 @@ io.on("connection", (socket: AuthenticatedSocket) => {
   if (socket.user && socket.user._id) {
     const userId = socket.user._id.toString();
     userSocketIDs.set(userId, socket.id);
+    onlineUsers.add(userId);
+    io.emit(JOINED, Array.from(onlineUsers));
 
     socket.on(
       NEW_MESSAGE,
@@ -124,18 +126,12 @@ io.on("connection", (socket: AuthenticatedSocket) => {
         }
       }
     );
-    socket.on(JOINED, ({ userId, members }) => {
-      onlineUsers.add(userId.toString());
+    socket.on("disconnect", () => {
+      if (userId) {
+        onlineUsers.delete(userId);
 
-      const membersSocket = getSockets(members);
-      io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
-    });
-
-    socket.on(EXITED, ({ userId, members }) => {
-      onlineUsers.delete(userId.toString());
-
-      const membersSocket = getSockets(members);
-      io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
+        io.emit(EXITED, Array.from(onlineUsers));
+      }
     });
   }
 });
