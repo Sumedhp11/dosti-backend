@@ -70,6 +70,7 @@ io.on("connection", (socket) => {
                 sender: userId,
                 chat: chatId,
             };
+            console.log("Members:", members);
             const membersSocket = await getSockets(members);
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,

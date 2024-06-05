@@ -101,6 +101,7 @@ io.on("connection", (socket: AuthenticatedSocket) => {
           sender: userId,
           chat: chatId,
         };
+        console.log("Members:", members);
         const membersSocket = await getSockets(members);
 
         io.to(membersSocket).emit(NEW_MESSAGE, {
