@@ -71,11 +71,12 @@ io.on("connection", (socket) => {
                 chat: chatId,
             };
             const membersSocket = getSockets(members);
+            const filteredMembersSocket = membersSocket.filter((memberSocket) => memberSocket !== socket.id);
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
             });
-            io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
+            io.to(filteredMembersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
             try {
                 await Message.create(messageForDb);
             }
