@@ -70,15 +70,15 @@ io.on("connection", (socket) => {
                 sender: userId,
                 chat: chatId,
             };
-            const membersSocket = getSockets(members);
-            console.log("All member sockets:", membersSocket);
-            console.log("Sender socket:", socket.id);
-            const filteredMembersSocket = membersSocket.filter((memberSocket) => memberSocket !== socket.id);
-            console.log("Filtered member sockets:", filteredMembersSocket);
+            const membersSocket = await getSockets(members);
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
             });
+            console.log("All member sockets:", membersSocket);
+            console.log("Sender socket:", socket.id);
+            const filteredMembersSocket = membersSocket.filter((memberSocket) => memberSocket !== socket.id);
+            console.log("Filtered member sockets:", filteredMembersSocket);
             io.to(filteredMembersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
             try {
                 await Message.create(messageForDb);
