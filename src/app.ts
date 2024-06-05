@@ -102,7 +102,7 @@ io.on("connection", (socket: AuthenticatedSocket) => {
           chat: chatId,
         };
 
-        const membersSocket = await getSockets(memberIds);
+        const membersSocket = getSockets(memberIds);
 
         io.to(membersSocket).emit(NEW_MESSAGE, {
           chatId,
