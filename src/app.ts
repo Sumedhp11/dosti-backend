@@ -88,6 +88,8 @@ io.on("connection", (socket: AuthenticatedSocket) => {
         memberIds: [];
         message: string;
       }) => {
+        console.log("Emitted", 91);
+
         const messageForRealTime = {
           content: message,
           _id: uuid(),
@@ -105,6 +107,7 @@ io.on("connection", (socket: AuthenticatedSocket) => {
         };
 
         const membersSocket = getSockets(memberIds);
+        console.log(membersSocket, 108, "Member Sockets");
 
         io.to(membersSocket).emit(NEW_MESSAGE, {
           chatId,

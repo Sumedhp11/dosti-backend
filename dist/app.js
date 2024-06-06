@@ -57,6 +57,7 @@ io.on("connection", (socket) => {
         onlineUsers.add(userId);
         io.emit(JOINED, Array.from(onlineUsers));
         socket.on(NEW_MESSAGE, async ({ chatId, memberIds, message, }) => {
+            console.log("Emitted", 91);
             const messageForRealTime = {
                 content: message,
                 _id: uuid(),
@@ -73,6 +74,7 @@ io.on("connection", (socket) => {
                 chat: chatId,
             };
             const membersSocket = getSockets(memberIds);
+            console.log(membersSocket, 108, "Member Sockets");
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
