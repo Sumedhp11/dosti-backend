@@ -1,5 +1,5 @@
 import express from "express";
-import { VerifyUser, checkUsernameExist, newUser, loginUser, forgetPasswordemailController, resetPassword, GetMyProfile, logoutController, sendFriendRequest, ManageFriendRequest, getAllUsers, } from "../controllers/user-controller.js";
+import { VerifyUser, checkUsernameExist, newUser, loginUser, forgetPasswordemailController, resetPassword, GetMyProfile, logoutController, sendFriendRequest, ManageFriendRequest, getAllUsers, editProfile, } from "../controllers/user-controller.js";
 import { singleAvatar } from "../utils/multerConfig.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
 const Router = express.Router();
@@ -14,4 +14,5 @@ Router.get("/logout", isAuthenticated, logoutController);
 Router.get("/get-All-users", isAuthenticated, getAllUsers);
 Router.get("/send-request/:receiverUserId", isAuthenticated, sendFriendRequest);
 Router.post("/manage-friend-request", isAuthenticated, ManageFriendRequest);
+Router.post("/edit-profile", singleAvatar, editProfile);
 export default Router;

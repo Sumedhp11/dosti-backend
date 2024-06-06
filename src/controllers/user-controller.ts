@@ -407,8 +407,44 @@ const getAllUsers = async (
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+const editProfile = async (
+  req: AuthenticatedInterface,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { fullName, username, phone, email } = req.body;
+    const file = req.file;
+    let avatar;
+    if (file) {
+      const result = await uploadFilesToCloudinary([file]);
+      avatar = result[0].public_id;
+    }
+
+    const alreadySavedUser = await User.findById(req.userId);
+    if (!alreadySavedUser)
+      return next(new ErrorHandler("User Doesnt Exist", 400));
+
+    alreadySavedUser.fullName = fullName;
+    alreadySavedUser.username = username;
+    alreadySavedUser.phone = phone;
+    alreadySavedUser.email = email;
+    alreadySavedUser.avatar = avatar;
+    await alreadySavedUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User Updated Successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHandler("Internal Server Error", 500));
+  }
+};
 export {
   GetMyProfile,
+  editProfile,
   VerifyUser,
   checkUsernameExist,
   forgetPasswordemailController,

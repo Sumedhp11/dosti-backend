@@ -11,6 +11,7 @@ import {
   sendFriendRequest,
   ManageFriendRequest,
   getAllUsers,
+  editProfile,
 } from "../controllers/user-controller.js";
 import { singleAvatar } from "../utils/multerConfig.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
@@ -27,5 +28,6 @@ Router.get("/logout", isAuthenticated, logoutController);
 Router.get("/get-All-users", isAuthenticated, getAllUsers);
 Router.get("/send-request/:receiverUserId", isAuthenticated, sendFriendRequest);
 Router.post("/manage-friend-request", isAuthenticated, ManageFriendRequest);
+Router.post("/edit-profile", singleAvatar, editProfile);
 
 export default Router;
