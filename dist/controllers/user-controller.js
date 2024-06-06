@@ -335,7 +335,9 @@ const editProfile = async (req, res, next) => {
         alreadySavedUser.username = username;
         alreadySavedUser.phone = phone;
         alreadySavedUser.email = email;
-        alreadySavedUser.avatar = avatar;
+        if (avatar) {
+            alreadySavedUser.avatar = avatar;
+        }
         await alreadySavedUser.save();
         return res.status(200).json({
             success: true,
