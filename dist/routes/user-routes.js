@@ -14,5 +14,5 @@ Router.get("/logout", isAuthenticated, logoutController);
 Router.get("/get-All-users", isAuthenticated, getAllUsers);
 Router.get("/send-request/:receiverUserId", isAuthenticated, sendFriendRequest);
 Router.post("/manage-friend-request", isAuthenticated, ManageFriendRequest);
-Router.post("/edit-profile", singleAvatar, editProfile);
+Router.post("/edit-profile", isAuthenticated, singleAvatar, editProfile);
 export default Router;

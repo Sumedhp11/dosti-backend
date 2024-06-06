@@ -421,7 +421,6 @@ const editProfile = async (
       const result = await uploadFilesToCloudinary([file]);
       avatar = result[0].public_id;
     }
-
     const alreadySavedUser = await User.findById(req.userId);
     if (!alreadySavedUser)
       return next(new ErrorHandler("User Doesnt Exist", 400));
