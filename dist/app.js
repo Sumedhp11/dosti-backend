@@ -39,7 +39,7 @@ const onlineUsers = new Set();
 export const resend = new Resend(process.env.RESEND_API_KEY);
 connectDb();
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://dosti-frontend.vercel.app"],
     credentials: true,
 }));
 app.use(express.json());
