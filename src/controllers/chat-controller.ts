@@ -68,7 +68,7 @@ const getAllMessages = async (
   try {
     const { chatId } = req.query;
     const { page = 1 } = req.query;
-    const limit = 20;
+    const limit = 10;
     const skip = (Number(page) - 1) * limit;
     const userId = req.userId!;
     if (!chatId) return next(new ErrorHandler("Please Provide ChatId", 400));

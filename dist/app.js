@@ -57,7 +57,6 @@ io.on("connection", (socket) => {
         onlineUsers.add(userId);
         io.emit(JOINED, Array.from(onlineUsers));
         socket.on(NEW_MESSAGE, async ({ chatId, memberIds, message, }) => {
-            console.log("Emitted", message);
             const messageForRealTime = {
                 content: message,
                 _id: uuid(),
